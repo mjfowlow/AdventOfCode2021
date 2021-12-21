@@ -106,82 +106,68 @@ def problem1():
 problem1()
 
 #                                           --- Problem 2 ---
-
+# Finish folding the transparent paper according to the instructions. The manual says the code is always eight capital letters.
+# What code do you use to activate the infrared thermal imaging camera system?
 
 def problem2():
     #Read the input
     input = open("input.txt")
     data = input.read().split("\n\n")
     
-
-    dots_coordinates = data[0].split("\n")
+    #Get coordinates and folds in a list in a list
+    coordinates = data[0].split("\n")
     folds = data[1].split("\n")
 
-    #Get greatest x and y values
-    greatest_x = 0
-    greatest_y = 0
+    #Create a set to hold the data coordinates, where each coordinate is a tuple ( (x,y) )
+    dots_coordinates = set()
+    for coordinate in coordinates:
+        dots_coordinates.add(tuple([int(i) for i in coordinate.split(",")]))
 
-    for coordinates in dots_coordinates:
-        x_value = int(coordinates.split(",")[0])
-        y_value = int(coordinates.split(",")[1])
-
-        if x_value > greatest_x:
-            greatest_x = x_value
-        if y_value > greatest_y:
-            greatest_y = y_value
-
-
-    #Create a empty matrix with y rows and x columns
-    paper = [["."] * (greatest_x + 1) for i in range(greatest_y + 1)]
-
-    #Iterate through coordinates adding dots at the coordinates
-    for coordinates in dots_coordinates:
-        x_coord = int(coordinates.split(",")[0])
-        y_coord = int(coordinates.split(",")[1])
-
-        paper[y_coord][x_coord] = '#'
-    
-
-    #Iterate throuhg the folds
+    #Iterate through folds
     for fold in folds:
+        #Get the type of fold ("x" or "y") and fold line value
         fold = fold.split(" ")[2]
         fold_line = int(fold.split("=")[1])
 
-        #If the fold line is 'y=..' it is a vertical fold up
-        if fold[0] == 'y':
-            #Create a new paper with new dimensions
-            new_paper =  [["."] * (len(paper[0])) for i in range(fold_line)]
-            
-            for y in range(fold_line):
-                for x in range(len(paper[0])):
-                    #Get the upper and lower values
-                    upper_value = paper[y][x]
-                    lower_value = paper[-y-1][x]
-
-                    #If either value is a dot set a dot at position[y][x] in the new paper
-                    if upper_value == "#" or lower_value == "#":
-                        new_paper[y][x] = "#"
-
-        #If the fold line is "x=..." then have a horizontal fold to the left"
-        if fold[0] == 'x':
-
-            #Create new paper with new dimensions
-            new_paper =  [["."] * (fold_line) for i in range(len(paper))]
-
-            #iterate through each position on both sides of the fold line
-            for x in range(fold_line):
-                for y in range(len(paper)):
-                    #get the values on the left and right side
-                    left_value = paper[y][x]
-                    right_value = paper[y][-x-1]
-
-                    #If either value is a dot set a dot at position[y][x] in the new paper
-                    if left_value == "#" or right_value == "#":
-                        new_paper[y][x] = "#"
+        #Create a new set of dots
+        new_dots = set()
         
-        paper = new_paper
-    
-    for row in paper:
-        print("".join(row))
+        #If fold equals "y" it is a vertical fold up
+        if fold[0] == 'y':
+            #Iterate through each coordinate 
+            for coordinate in dots_coordinates:
+                #If the y coordinates is greater then the fold line, we need to calculate the new y coordinate after folding
+                if coordinate[1] > fold_line:
+                    #To get the new y coordinate we do the calculation (2 x fold line - y-coordinate)
+                    new_coordinate = (coordinate[0], fold_line * 2 - coordinate[1])
+                    new_dots.add(new_coordinate)
+                #If the y-coordinate is lesss then the fold line just add it to the new set of dots
+                else:
+                    new_dots.add(coordinate)
+                
+        #If the fold equals "x" it is a horizontal fold to the left
+        if fold[0] == 'x':
+            #Iterate trhoguh each coordinate
+            for coordinate in dots_coordinates:
+                #If the x-coordinate is less then the fold_line caluclate the new x-coord after folding 
+                if coordinate[0] > fold_line:
+                    new_coordinate = (fold_line * 2 - coordinate[0], coordinate[1])
+                    new_dots.add(new_coordinate)
+                #Otherwise add the coordinate to the new set fo coordinates
+                else:
+                    new_dots.add(coordinate)
 
+        #Set the old coordinates as the new set of coordinates
+        dots_coordinates = new_dots
+    
+    #Print the message
+    print("\nProblem 2 Output:")
+    for y in range(6):
+        for x in range(50):
+            if (x, y) in dots_coordinates:
+                print("##", end="")
+            else:
+                print("..", end="")
+        print()
+    
 problem2()
